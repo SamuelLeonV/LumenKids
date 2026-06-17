@@ -3,6 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Self-hosted deps: load React/ReactDOM locally BEFORE support.js so the dc
+     runtime finds window.React already set and skips the unpkg CDN fetch. This
+     is the #1 reason the page failed on adblocked / firewalled / offline nets. -->
+<script src="./vendor/react.production.min.js"></script>
+<script src="./vendor/react-dom.production.min.js"></script>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -81,7 +86,7 @@
   /* parallax layers ease toward the pointer target */
   .ld-pl { transition: transform 0.3s cubic-bezier(0.22,1,0.36,1); will-change: transform; }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="./vendor/three.min.js"></script>
 </helmet>
 
 <div ref="{{ rootRef }}" style="position: relative; width: 100%; min-height: 100vh; overflow: hidden; font-family: 'Nunito', sans-serif; --mx: 0px; --my: 0px; background: linear-gradient(180deg, #bfe6f3 0%, #d6eff0 32%, #e9f6e6 52%, #f7efd9 78%, #f6e3c4 100%);">
@@ -1212,11 +1217,26 @@ class Component extends DCLogic {
     return g;
   }
 
+  webglOK() {
+    try {
+      const c = document.createElement("canvas");
+      return !!(window.WebGLRenderingContext && (c.getContext("webgl") || c.getContext("experimental-webgl")));
+    } catch (e) { return false; }
+  }
+  showNoWebGL(host) {
+    if (!host || host.querySelector("[data-no-webgl]")) return;
+    const d = document.createElement("div");
+    d.setAttribute("data-no-webgl", "1");
+    d.style.cssText = "position:absolute;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;padding:32px;text-align:center;font-family:'Nunito',sans-serif;";
+    d.innerHTML = "<div style=\"max-width:380px;background:rgba(255,255,255,0.93);border-radius:24px;padding:28px 26px;box-shadow:0 18px 40px -18px rgba(40,75,45,0.4);\"><div style=\"font-size:46px;margin-bottom:10px;\">🐑</div><div style=\"font-family:'Baloo 2',sans-serif;font-weight:800;font-size:21px;color:#25361f;margin-bottom:8px;\">El mundo 3D no se puede mostrar aquí</div><div style=\"font-size:14.5px;font-weight:600;color:#6b7566;line-height:1.5;\">Tu navegador no tiene <b>WebGL</b> activo. Probá en Chrome o Firefox de escritorio, o activá la aceleración por hardware.</div></div>";
+    host.insertBefore(d, host.firstChild);
+  }
   initVoxel() {
     if (this.state.phase !== "world") return;
     const host = this.worldViewportRef.current;
     if (!host || !window.THREE) { this._voxTry = (this._voxTry || 0) + 1; if (this._voxTry < 200) setTimeout(() => this.initVoxel(), 60); return; }
     this._voxTry = 0;
+    if (!this.webglOK()) { this.showNoWebGL(host); return; }
     this.disposeVoxel();
     const T = window.THREE;
     const W = host.clientWidth || 960, H = host.clientHeight || 600;
@@ -1225,7 +1245,9 @@ class Component extends DCLogic {
     const QP = q === "low"
       ? { R: 2, fogN: 22, fogF: 52, pr: 0.7, density: 0.45 }
       : { R: 3, fogN: 42, fogF: 96, pr: Math.min(1, window.devicePixelRatio || 1), density: 1 };
-    const renderer = new T.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true, powerPreference: "high-performance" });
+    let renderer;
+    try { renderer = new T.WebGLRenderer({ antialias: false, preserveDrawingBuffer: true, powerPreference: "high-performance" }); }
+    catch (e) { this.showNoWebGL(host); return; }
     renderer.setPixelRatio(QP.pr); renderer.setSize(W, H);
     const cv = renderer.domElement; cv.style.cssText = "position:absolute;inset:0;width:100%;height:100%;display:block;";
     host.insertBefore(cv, host.firstChild);
