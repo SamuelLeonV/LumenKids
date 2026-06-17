@@ -654,7 +654,7 @@ export function createGame({ canvas, character, stories = STORIES, onStar = () =
   buildHotbar(); updateStars();
   // saludo según el personaje elegido en el login (pasado como argumento `character`)
   (()=>{ const c=character;
-    const names={sheep:'Ovejita',disciple:'Discípulo',child:'Niño Cristiano'};
+    const names={ovejita:'Ovejita',discipulo:'Discípulo',nino:'Niño Cristiano'};
     if(c&&names[c]){ const sub=document.querySelector('#overlay .sub');
       if(sub) sub.textContent='¡Hola, '+names[c]+'! Explora el mundo abierto y aprende historias de la Biblia.'; }
   })();
@@ -723,6 +723,7 @@ export function createGame({ canvas, character, stories = STORIES, onStar = () =
       if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
       for (const { target, type, fn, opts } of tracked) target.removeEventListener(type, fn, opts);
       tracked.length = 0;
+      document.body.classList.remove('touch');
       renderer.dispose();
     },
   };

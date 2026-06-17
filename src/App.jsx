@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { loadSave, persist } from './lib/save.js';
+import { loadSave, persist, clearSave } from './lib/save.js';
 import Login from './screens/Login.jsx';
 import Aventura from './game/Aventura.jsx';
 
@@ -25,6 +25,8 @@ export default function App() {
 
   const onExit = useCallback(() => setScreen('login'), []);
 
+  const reset = useCallback(() => { clearSave(); setSave(loadSave()); setCharacter(null); }, []);
+
   const onWin = useCallback(() => {}, []);
 
   if (screen === 'game') {
@@ -37,5 +39,5 @@ export default function App() {
       />
     );
   }
-  return <Login onChoose={choose} savedCharacter={save.character} />;
+  return <Login onChoose={choose} savedCharacter={save.character} onReset={reset} />;
 }

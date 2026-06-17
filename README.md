@@ -46,6 +46,8 @@ El despliegue es **automático**: cada `push` a `main` dispara el workflow
 
 No se necesita correr ningún comando manual para publicar.
 
+> **Primera vez:** hay que configurar el repositorio en Settings → Pages → Source: **GitHub Actions** para que el workflow pueda publicar.
+
 ## Robustez
 
 - **Sin CDN en runtime**: todas las dependencias (React, Three.js) van en el bundle.

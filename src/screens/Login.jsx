@@ -474,7 +474,7 @@ class LoginInner extends React.Component {
 
             <div style={s('position: relative; margin-bottom: 14px;')}>
               <div style={s('position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 18px; opacity: 0.7;')}>✉️</div>
-              <input type="email" value={st.email} onInput={this.onEmail} onChange={this.onEmail} onFocus={this.onFocusEmail} onBlur={this.onBlur} placeholder="Correo electrónico" style={s(inputBase(st.focus === 'email', emailValid))} />
+              <input type="email" value={st.email} onChange={this.onEmail} onFocus={this.onFocusEmail} onBlur={this.onBlur} placeholder="Correo electrónico" style={s(inputBase(st.focus === 'email', emailValid))} />
               {emailValid && (
                 <div style={s('position: absolute; right: 16px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; border-radius: 50%; background: #2f7d4f; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px; animation: ld-pop 0.35s ease;')}>✓</div>
               )}
@@ -482,7 +482,7 @@ class LoginInner extends React.Component {
 
             <div style={s('position: relative; margin-bottom: 14px;')}>
               <div style={s('position: absolute; left: 16px; top: 50%; transform: translateY(-50%); font-size: 17px; opacity: 0.7;')}>🔒</div>
-              <input type={st.showPass ? 'text' : 'password'} value={st.password} onInput={this.onPassword} onChange={this.onPassword} onFocus={this.onFocusPass} onBlur={this.onBlur} placeholder="Contraseña" style={s(inputBase(st.focus === 'pass', false))} />
+              <input type={st.showPass ? 'text' : 'password'} value={st.password} onChange={this.onPassword} onFocus={this.onFocusPass} onBlur={this.onBlur} placeholder="Contraseña" style={s(inputBase(st.focus === 'pass', false))} />
               <button type="button" onClick={this.toggleShow} style={s('position: absolute; right: 10px; top: 50%; transform: translateY(-50%); border: none; background: transparent; cursor: pointer; font-size: 18px; padding: 6px; opacity: 0.65;')}>{st.showPass ? '🙈' : '👁️'}</button>
             </div>
 
@@ -517,6 +517,11 @@ class LoginInner extends React.Component {
               ¿No tienes cuenta? <a style={s('color: #2f7d4f; font-weight: 800; cursor: pointer; text-decoration: none;')}>Crear cuenta</a>
             </div>
             <div style={s('text-align: center; margin-top: 12px; font-size: 13px; font-weight: 700; color: #a7afa1; cursor: pointer;')}>Cambiar grupo</div>
+            {this.props.onReset && (
+              <div style={s('text-align: center; margin-top: 8px;')}>
+                <button onClick={this.props.onReset} style={s('background: none; border: none; cursor: pointer; font-size: 12px; font-weight: 600; color: #c0c7ba; text-decoration: underline; padding: 0;')}>Reiniciar progreso</button>
+              </div>
+            )}
           </div>
         </div>
 

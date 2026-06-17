@@ -11,4 +11,7 @@ describe('s()', () => {
     expect(s('')).toEqual({});
     expect(s('color:red;;')).toEqual({ color: 'red' });
   });
+  it('preserves CSS custom properties verbatim', () => {
+    expect(s('--mx: 0px; color: red')).toEqual({ '--mx': '0px', color: 'red' });
+  });
 });
