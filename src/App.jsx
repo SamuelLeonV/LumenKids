@@ -25,12 +25,14 @@ export default function App() {
 
   const onExit = useCallback(() => setScreen('login'), []);
 
+  const onWin = useCallback(() => {}, []);
+
   if (screen === 'game') {
     return (
       <Aventura
         character={character}
         onStar={onStar}
-        onWin={() => {}}
+        onWin={onWin}
         onExit={onExit}
       />
     );
