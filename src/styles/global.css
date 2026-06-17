@@ -1,3 +1,70 @@
 /* src/styles/global.css */
 * { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
+
+/* ===== Login scene animations (ported from legacy/index.html <style>) =====
+   These @keyframes are referenced by name inside inline styles, so they must
+   live in a global stylesheet rather than as inline style objects. */
+@keyframes ld-flicker {
+  0%, 100% { transform: translateX(-50%) scaleY(1) scaleX(1); opacity: 0.85; }
+  25% { transform: translateX(-50%) scaleY(1.18) scaleX(0.92); opacity: 1; }
+  50% { transform: translateX(-50%) scaleY(0.9) scaleX(1.08); opacity: 0.7; }
+  75% { transform: translateX(-50%) scaleY(1.12) scaleX(0.95); opacity: 0.95; }
+}
+@keyframes ld-glow {
+  0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.55; }
+  50% { transform: translate(-50%, -50%) scale(1.12); opacity: 0.8; }
+}
+@keyframes ld-rays { to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes ld-ember {
+  0% { transform: translateY(0) scale(1); opacity: 0; }
+  15% { opacity: 0.9; }
+  80% { opacity: 0.7; }
+  100% { transform: translateY(-220px) translateX(var(--dx, 20px)) scale(0.3); opacity: 0; }
+}
+@keyframes ld-sway {
+  0%, 100% { transform: rotate(-1.1deg) translateX(0); }
+  50% { transform: rotate(1.1deg) translateX(6px); }
+}
+@keyframes ld-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-16px); } }
+@keyframes ld-cardin {
+  from { opacity: 0; transform: translateY(28px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes ld-bobble {
+  0%, 100% { transform: translateY(0) rotate(-4deg); }
+  50% { transform: translateY(-5px) rotate(4deg); }
+}
+@keyframes ld-spin { to { transform: rotate(360deg); } }
+@keyframes ld-pop {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+@keyframes ld-cloud { 0% { transform: translateX(0); } 100% { transform: translateX(60px); } }
+@keyframes ld-firefly {
+  0%, 100% { transform: translate(0,0); opacity: 0.25; }
+  25% { opacity: 1; }
+  50% { transform: translate(22px, -26px); opacity: 0.6; }
+  75% { opacity: 0.9; }
+}
+@keyframes ld-bird { 0%,100% { transform: translateY(0) scaleX(1); } 50% { transform: translateY(-6px) scaleX(0.9); } }
+@keyframes ld-walkA { 0%,100% { transform: rotate(16deg); } 50% { transform: rotate(-16deg); } }
+@keyframes ld-walkB { 0%,100% { transform: rotate(-16deg); } 50% { transform: rotate(16deg); } }
+@keyframes ld-bob2 { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+@keyframes ld-march { 0% { transform: translateX(60vw); } 100% { transform: translateX(-32vw); } }
+@keyframes ld-staff { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes ld-crossglow { 0%,100% { opacity: 0.5; transform: translate(-50%,-50%) scale(1); } 50% { opacity: 0.85; transform: translate(-50%,-50%) scale(1.08); } }
+@keyframes ld-halo { 0%,100% { box-shadow: 0 0 14px 3px rgba(255,214,110,0.7); } 50% { box-shadow: 0 0 24px 7px rgba(255,224,140,0.95); } }
+@keyframes ld-hobble { 0% { transform: rotate(0) translateY(0); } 20% { transform: rotate(-6deg) translateY(2px); } 40% { transform: rotate(0) translateY(-3px); } 60% { transform: rotate(5deg) translateY(0); } 80% { transform: rotate(0) translateY(-2px); } 100% { transform: rotate(0) translateY(0); } }
+@keyframes ld-limpleg { 0%,100% { transform: rotate(26deg); } 50% { transform: rotate(8deg); } }
+@keyframes ld-lostdrift { 0%,100% { transform: translateX(0); } 50% { transform: translateX(46px); } }
+@keyframes ld-question { 0%,100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-5px); opacity: 1; } }
+@keyframes ld-cloudloop { from { transform: translateX(-20vw); } to { transform: translateX(120vw); } }
+@keyframes ld-dovefly { 0% { left: 3%; top: 22%; } 25% { top: 14%; } 50% { left: 82%; top: 25%; } 75% { top: 15%; } 100% { left: 3%; top: 22%; } }
+@keyframes ld-doveturn { 0%,49% { transform: scaleX(1); } 50%,99% { transform: scaleX(-1); } 100% { transform: scaleX(1); } }
+@keyframes ld-doveflap { 0%,100% { transform: rotate(-24deg); } 50% { transform: rotate(36deg); } }
+@keyframes ld-treesway { 0%,100% { transform: rotate(-1.6deg); } 50% { transform: rotate(1.6deg); } }
+@keyframes ld-tap { 0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,210,90,0.7), 0 4px 9px rgba(0,0,0,0.2); } 70% { transform: scale(1.14); box-shadow: 0 0 0 11px rgba(255,210,90,0), 0 4px 9px rgba(0,0,0,0.2); } 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,210,90,0), 0 4px 9px rgba(0,0,0,0.2); } }
+/* parallax layers ease toward the pointer target */
+.ld-pl { transition: transform 0.3s cubic-bezier(0.22,1,0.36,1); will-change: transform; }

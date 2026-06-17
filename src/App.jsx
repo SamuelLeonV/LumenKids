@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { loadSave, persist, clearSave } from './lib/save.js';
-import { STORIES } from './data/content.js';
+import Login from './screens/Login.jsx';
 
 export default function App() {
   const [save, setSave] = useState(loadSave);
@@ -23,7 +23,6 @@ export default function App() {
   }, []);
 
   const onExit = useCallback(() => setScreen('login'), []);
-  const reset = useCallback(() => { clearSave(); setSave(loadSave()); setCharacter(null); }, []);
 
   if (screen === 'game') {
     // Placeholder until Task 5 adds <Aventura/>.
@@ -34,12 +33,5 @@ export default function App() {
       </div>
     );
   }
-  // Placeholder until Task 3 adds <Login/>.
-  return (
-    <div style={{ padding: 40, fontFamily: 'Nunito, sans-serif' }}>
-      <p>Login — pendiente Task 3. Total historias: {STORIES.length}. Estrellas: {save.stars}</p>
-      <button onClick={() => choose('nino')}>Entrar como Niño (stub)</button>
-      <button onClick={reset}>Reiniciar progreso</button>
-    </div>
-  );
+  return <Login onChoose={choose} savedCharacter={save.character} />;
 }
