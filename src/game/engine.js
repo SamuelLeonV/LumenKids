@@ -504,7 +504,7 @@ export function createGame({ canvas, character, stories = STORIES, onStar = () =
   const overlay=document.getElementById('overlay'), playBtn=document.getElementById('playBtn');
   const dialog=document.getElementById('dialog'), winScreen=document.getElementById('win');
   const canvasEl=renderer.domElement;
-  let dialogOpen=false, nearNpc=null, currentNpc=null, stars=0, talkBtnEl=null;
+  let dialogOpen=false, nearNpc=null, currentNpc=null, stars=0, talkBtnEl=null, won=false;
   const starsEl=document.getElementById('stars'), promptEl=document.getElementById('prompt');
 
   function updateStars(){ starsEl.textContent='⭐ '+stars+' / '+stories.length; }
@@ -562,7 +562,7 @@ export function createGame({ canvas, character, stories = STORIES, onStar = () =
   }
   function closeDialog(){
     dialog.style.display='none'; dialogOpen=false; currentNpc=null;
-    if(stars>=stories.length){ winScreen.style.display='flex'; onWin(); }
+    if(stars>=stories.length && !won){ won=true; winScreen.style.display='flex'; onWin(); }
     else if(!IS_TOUCH) canvasEl.requestPointerLock();
   }
   dcontinue.addEventListener('click',closeDialog);
