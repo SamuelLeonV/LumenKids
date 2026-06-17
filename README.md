@@ -1,49 +1,54 @@
 # Pequeños Discípulos — Login infantil + Aventura Bíblica
 
-App infantil de la plataforma **Lumen** (LMS cristiano / discipulado), en **dos páginas**:
-
-1. **`index.html`** — login gamificado (React vía dc-runtime). Escena parallax con
-   cruz, paloma, Jesús y el rebaño; mini-juego de la oveja perdida; modales bíblicos
-   (Juan 3:16, Mateo 3:16, Juan 10:11, Lucas 15:4-7); selección de personaje.
-2. **`aventura-biblica.html`** — el juego: mundo abierto voxel estilo Minecraft en
-   **Three.js puro (vanilla JS, sin React/eval)**. El login navega aquí con
-   `?char=ovejita|discipulo|nino`.
-
-Separar el juego pesado (solo Three.js) del login (React) lo hace más liviano y
-robusto entre navegadores.
+App infantil de la plataforma **Lumen** (LMS cristiano / discipulado): login gamificado
+con selección de personaje y juego de mundo voxel bíblico con Three.js, empaquetada
+como una **Vite + React** SPA.
 
 ## Demo en vivo
 
 ➡️ **https://samuelleonv.github.io/LumenKids/**
 
-## Cómo correr local
-
-Estático. Cualquier servidor sirve (HTTP, no `file://`):
+## Desarrollo local
 
 ```bash
-python3 -m http.server 8000
-# abrir http://localhost:8000/
+npm install
+npm run dev      # servidor HMR en http://localhost:5173/LumenKids/
+npm run build    # genera dist/ (producción)
+npm run preview  # sirve dist/ localmente para verificar
 ```
-
-## Robustez entre navegadores
-
-- **Deps auto-hospedadas** en `vendor/` (React 18.3.1, ReactDOM, Three.js r128).
-  React carga antes de `support.js` → el runtime no llama a ningún CDN. Sin
-  dependencia de unpkg/cdnjs (funciona con adblock / firewall / offline).
-- **Fallback WebGL**: si el navegador no tiene WebGL, ambas páginas muestran un
-  aviso amistoso en vez de romperse.
-- Único externo restante: Google Fonts (degradan a fuente del sistema si se bloquean).
 
 ## Estructura
 
-- `index.html` — login (DesignCode `<x-dc>` + `DCLogic`). Entry de Pages.
-- `aventura-biblica.html` — juego voxel vanilla + Three.js.
-- `support.js` — runtime `dc-runtime` del login.
-- `vendor/` — React + ReactDOM + Three.js auto-hospedados.
-- `login-monolitico.html` — versión anterior todo-en-uno (respaldo).
-- `.nojekyll` — sirve archivos tal cual en Pages.
-- `project/` — bundle original del handoff de Claude Design.
+```
+src/
+  main.jsx          — punto de entrada React
+  App.jsx           — shell de la app (estado: pantalla activa, personaje)
+  screens/
+    Login.jsx       — login gamificado: parallax, oveja perdida, selección de personaje
+    Aventura.jsx    — wrapper React del motor Three.js
+  game/
+    engine.js       — motor voxel Three.js (mundo abierto, sin eval)
+  data/
+    content.js      — STORIES, CHARACTERS, MODALS (contenido bíblico)
+  lib/              — utilidades (save.js para localStorage)
+  styles/           — CSS global
 
-## Origen
+legacy/             — prototipo estático anterior (solo referencia, no se sirve)
+index.html          — entry point de Vite
+vite.config.js      — base: '/LumenKids/', plugin React, config de tests
+```
 
-Diseñado en [Claude Design](https://claude.ai/design) y exportado como handoff.
+## Despliegue
+
+El despliegue es **automático**: cada `push` a `main` dispara el workflow
+`.github/workflows/deploy.yml`, que ejecuta `npm ci && npm run build` y publica
+`dist/` en GitHub Pages con `actions/deploy-pages`.
+
+No se necesita correr ningún comando manual para publicar.
+
+## Robustez
+
+- **Sin CDN en runtime**: todas las dependencias (React, Three.js) van en el bundle.
+  Funciona con adblock / firewall / offline.
+- **Fallback WebGL**: si el navegador no soporta WebGL se muestra un aviso amistoso.
+- Único externo restante: Google Fonts (degrada a fuente del sistema si se bloquea).
