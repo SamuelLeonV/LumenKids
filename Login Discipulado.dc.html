@@ -761,7 +761,7 @@ class Component extends DCLogic {
     if (!p.x) p.x = W * 0.46;
     const minX = W * 0.40, maxX = W - 72;
     if (!p.joined) {
-      let vx = 0; const sp = 3.6 * k;
+      let vx = 0; const sp = 2.9 * k;
       if (this.keys.left) vx -= sp;
       if (this.keys.right) vx += sp;
       p.x += vx;
@@ -1310,13 +1310,25 @@ class Component extends DCLogic {
     this.vox = { renderer, scene, camera, player, ground, sky, clouds, landmarks, mats, obstacles: landmarks.slice(), mountains: [], chunks: new Map(), CHUNK: 16, R: QP.R, density: QP.density, quality: q, x: 0, y: 0, z: 6, vy: 0, yaw: Math.PI, pitch: 0.0, fp: true, grounded: true, walk: 0, flock: [], onResize, onMoveP, onUpP, host };
     this.updateChunks();
     this.startMusic();
-    const loop = () => { if (!this.vox) return; this.voxelStep(); this.vox.renderer.render(this.vox.scene, this.vox.camera); this.vox.raf = requestAnimationFrame(loop); };
+    // Fixed-timestep loop: voxelStep is full of per-frame `+= const` motion, so
+    // on high-refresh displays (120/144Hz) it ran ~2x too fast. Step the sim at a
+    // steady 60Hz no matter the real frame rate; render once per animation frame.
+    let voxLast = null;
+    const STEP = 1000 / 60;
+    const loop = (now) => {
+      if (!this.vox) return;
+      if (voxLast == null) voxLast = now;
+      let acc = Math.min(100, now - voxLast); voxLast = now;
+      while (acc >= STEP) { this.voxelStep(); acc -= STEP; }
+      this.vox.renderer.render(this.vox.scene, this.vox.camera);
+      this.vox.raf = requestAnimationFrame(loop);
+    };
     this.vox.raf = requestAnimationFrame(loop);
   }
 
   voxelStep() {
     const v = this.vox; if (!v) return;
-    const sp = 0.13;
+    const sp = 0.105;
     const lk = this._quizOpen;
     const fx = Math.sin(v.yaw), fz = Math.cos(v.yaw);   // forward
     const rx = Math.cos(v.yaw), rz = -Math.sin(v.yaw);  // right (strafe)
