@@ -517,6 +517,11 @@ class LoginInner extends React.Component {
               ¿No tienes cuenta? <a style={s('color: #2f7d4f; font-weight: 800; cursor: pointer; text-decoration: none;')}>Crear cuenta</a>
             </div>
             <div style={s('text-align: center; margin-top: 12px; font-size: 13px; font-weight: 700; color: #a7afa1; cursor: pointer;')}>Cambiar grupo</div>
+            {this.props.onOpenRewards && (
+              <div style={s('text-align: center; margin-top: 10px;')}>
+                <button onClick={this.props.onOpenRewards} style={s("background: #f3f6f1; border: 1.5px solid #d8e3d4; cursor: pointer; font-family: 'Nunito', sans-serif; font-size: 13px; font-weight: 800; color: #2f7d4f; border-radius: 999px; padding: 7px 16px;")}>⭐ Recompensas</button>
+              </div>
+            )}
             {this.props.onReset && (
               <div style={s('text-align: center; margin-top: 8px;')}>
                 <button onClick={this.props.onReset} style={s('background: none; border: none; cursor: pointer; font-size: 12px; font-weight: 600; color: #c0c7ba; text-decoration: underline; padding: 0;')}>Reiniciar progreso</button>

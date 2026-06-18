@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { loadSave, persist, clearSave } from './lib/save.js';
 import Login from './screens/Login.jsx';
 import Aventura from './game/Aventura.jsx';
+import Recompensas from './screens/Recompensas.jsx';
 
 export default function App() {
   const [save, setSave] = useState(loadSave);
@@ -29,6 +30,15 @@ export default function App() {
 
   const onWin = useCallback(() => {}, []);
 
+  const recordScore = useCallback((key, score) => setSave(s => {
+    const best = Math.max(s.rewards?.[key] || 0, score);
+    const next = { ...s, rewards: { ...(s.rewards || { quiz: 0, memoria: 0, quien: 0 }), [key]: best } };
+    persist(next);
+    return next;
+  }), []);
+
+  const openRewards = useCallback(() => setScreen('rewards'), []);
+
   if (screen === 'game') {
     return (
       <Aventura
@@ -39,5 +49,8 @@ export default function App() {
       />
     );
   }
-  return <Login onChoose={choose} savedCharacter={save.character} onReset={reset} />;
+  if (screen === 'rewards') {
+    return <Recompensas save={save} onScore={recordScore} onExit={() => setScreen('login')} />;
+  }
+  return <Login onChoose={choose} savedCharacter={save.character} onReset={reset} onOpenRewards={openRewards} />;
 }
