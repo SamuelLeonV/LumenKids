@@ -250,6 +250,17 @@ export default function MemoriaVersiculos({ onComplete, onExit }) {
   const [score, setScore] = useState(0);
   const completedRef = useRef(false);
   const lockRef = useRef(false);        // prevents clicking during flip-back animation
+  const flipBackTimerRef = useRef(null); // id of the non-match flip-back timeout
+
+  // Clear any pending flip-back timeout on unmount.
+  useEffect(() => {
+    return () => {
+      if (flipBackTimerRef.current) {
+        clearTimeout(flipBackTimerRef.current);
+        flipBackTimerRef.current = null;
+      }
+    };
+  }, []);
 
   // Check for game completion whenever matched set changes
   useEffect(() => {
@@ -296,7 +307,8 @@ export default function MemoriaVersiculos({ onComplete, onExit }) {
           return [];
         } else {
           // Flip back after 800ms
-          setTimeout(() => {
+          flipBackTimerRef.current = setTimeout(() => {
+            flipBackTimerRef.current = null;
             setFlipped([]);
             lockRef.current = false;
           }, 800);

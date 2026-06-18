@@ -23,13 +23,11 @@ const MAX_POSSIBLE = TOTAL_Q * (POINTS_CORRECT + MAX_TIME_BONUS + 3); // 126
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
-function seededShuffle(arr, seed) {
-  // Simple deterministic LCG shuffle — seed is a positive integer.
-  const a = [...arr];
-  let s = seed >>> 0;
+function shuffledIndices() {
+  // Fisher-Yates shuffle of STORIES indices [0..TOTAL_Q-1].
+  const a = STORIES.map((_, i) => i);
   for (let i = a.length - 1; i > 0; i--) {
-    s = (Math.imul(1664525, s) + 1013904223) >>> 0;
-    const j = s % (i + 1);
+    const j = Math.floor(Math.random() * (i + 1));
     [a[i], a[j]] = [a[j], a[i]];
   }
   return a;
@@ -69,9 +67,10 @@ function TimerBar({ fraction }) {
 // Main component
 // ---------------------------------------------------------------------------
 export default function QuizRapido({ onComplete, onExit }) {
-  // --- Seed is set once on mount ---
-  const [seed] = useState(() => (Date.now() % 0xffff) + 1);
-  const [order] = useState(() => seededShuffle(STORIES.map((_, i) => i), (Date.now() % 0xffff) + 1));
+  // --- Single source of truth for question order ---
+  // `order` is a shuffled array of STORIES indices. Both the rendered question
+  // and handleAnswer's grading read STORIES[order[qi]] — never two orders.
+  const [order, setOrder] = useState(() => shuffledIndices());
 
   // Game phases: 'playing' | 'finished'
   const [phase, setPhase] = useState('playing');
@@ -94,6 +93,11 @@ export default function QuizRapido({ onComplete, onExit }) {
   // onComplete guard — ensure called exactly once
   const completedRef = useRef(false);
 
+  // Track pending timers (feedback/advance timeouts + countdown interval) so we
+  // can clear them on unmount and never setState/onComplete after exit.
+  const timersRef = useRef([]);
+  const unmountedRef = useRef(false);
+
   // Refs to allow stable callbacks
   const ticksRef = useRef(ticks);
   ticksRef.current = ticks;
@@ -101,6 +105,18 @@ export default function QuizRapido({ onComplete, onExit }) {
   feedbackRef.current = feedback;
   const qiRef = useRef(qi);
   qiRef.current = qi;
+
+  // Clear all pending timers on unmount.
+  useEffect(() => {
+    return () => {
+      unmountedRef.current = true;
+      timersRef.current.forEach((id) => {
+        clearTimeout(id);
+        clearInterval(id);
+      });
+      timersRef.current = [];
+    };
+  }, []);
 
   // ---------------------------------------------------------------------------
   // Advance to next question (or finish)
@@ -144,6 +160,7 @@ export default function QuizRapido({ onComplete, onExit }) {
         return prev - 1;
       });
     }, TICK_MS);
+    timersRef.current.push(id);
 
     return () => clearInterval(id);
   }, [phase, feedback, qi]); // restart when question changes
@@ -158,9 +175,11 @@ export default function QuizRapido({ onComplete, onExit }) {
     setFeedback('wrong');
     setChosenIdx(null);
     const newCombo = 0;
-    setTimeout(() => {
+    const id = setTimeout(() => {
+      if (unmountedRef.current) return;
       advanceOrFinish(score, newCombo);
     }, ADVANCE_DELAY_MS);
+    timersRef.current.push(id);
   }, [ticks, phase, feedback, score, advanceOrFinish]);
 
   // ---------------------------------------------------------------------------
@@ -189,33 +208,19 @@ export default function QuizRapido({ onComplete, onExit }) {
 
     const nextScore = score + gained;
 
-    setTimeout(() => {
+    const id = setTimeout(() => {
+      if (unmountedRef.current) return;
       advanceOrFinish(nextScore, newCombo);
     }, ADVANCE_DELAY_MS);
+    timersRef.current.push(id);
   }, [feedback, order, qi, combo, ticks, maxTicks, score, advanceOrFinish]);
 
   // ---------------------------------------------------------------------------
-  // Restart handler
+  // Restart handler — reshuffle the single `order` and reset all game state.
   // ---------------------------------------------------------------------------
   const handleRestart = useCallback(() => {
     completedRef.current = false;
-    // Re-shuffle by re-mounting: we set phase back but keep same seed for shuffle
-    // Instead rebuild state manually.
-    const newOrder = seededShuffle(STORIES.map((_, i) => i), (Date.now() % 0xffff) + 1);
-    // We can't mutate `order` (it's const from useState), so we use a different key.
-    // Easiest: reload via a key prop passed from parent? We don't control that.
-    // Use a remountKey trick with a state counter to force re-init.
-    setRemountKey(k => k + 1);
-  }, []);
-
-  const [remountKey, setRemountKey] = useState(0);
-
-  // When remountKey changes, we want to reset everything.
-  // We handle this by deriving the order from remountKey seed.
-  const stableOrder = useRef(order);
-  useEffect(() => {
-    if (remountKey === 0) return;
-    stableOrder.current = seededShuffle(STORIES.map((_, i) => i), (Date.now() % 0xffff) + remountKey);
+    setOrder(shuffledIndices());
     setQi(0);
     setTicks(maxTicks);
     setFeedback(null);
@@ -223,15 +228,12 @@ export default function QuizRapido({ onComplete, onExit }) {
     setScore(0);
     setCombo(0);
     setPhase('playing');
-  }, [remountKey, maxTicks]);
-
-  // Use stableOrder.current when remountKey > 0, else the original order
-  const effectiveOrder = remountKey > 0 ? stableOrder.current : order;
+  }, [maxTicks]);
 
   // ---------------------------------------------------------------------------
-  // Derived display values
+  // Derived display values — reads the same `order[qi]` as handleAnswer.
   // ---------------------------------------------------------------------------
-  const currentStory = STORIES[effectiveOrder[Math.min(qi, TOTAL_Q - 1)]];
+  const currentStory = STORIES[order[Math.min(qi, TOTAL_Q - 1)]];
   const timerFraction = ticks / maxTicks;
 
   // ---------------------------------------------------------------------------

@@ -1,7 +1,7 @@
 // src/screens/Recompensas.jsx
 // Centro de Recompensas — missions journal + minigame hub.
 // Props: { save, onScore(key, score), onExit() }
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { STORIES } from '../data/content.js';
 import QuizRapido from '../minigames/QuizRapido.jsx';
 import MemoriaVersiculos from '../minigames/MemoriaVersiculos.jsx';
@@ -179,17 +179,25 @@ const styles = {
 export default function Recompensas({ save, onScore, onExit }) {
   const [active, setActive] = useState(null);
 
+  // Stable callbacks for the active minigame so its completion effect isn't
+  // re-fired by new inline-arrow identities on every parent render.
+  const handleGameComplete = useCallback((score) => {
+    onScore(active, score);
+    setActive(null);
+  }, [active, onScore]);
+
+  const handleGameExit = useCallback(() => {
+    setActive(null);
+  }, [active, onScore]);
+
   if (active) {
     const game = GAMES.find((g) => g.key === active);
     if (game) {
       const Comp = game.Comp;
       return (
         <Comp
-          onComplete={(score) => {
-            onScore(active, score);
-            setActive(null);
-          }}
-          onExit={() => setActive(null)}
+          onComplete={handleGameComplete}
+          onExit={handleGameExit}
         />
       );
     }
